@@ -1,4 +1,15 @@
-Assignment: Course Project 2 for Reproducable Research.
+## Synopsis
+
+__This research was done as part of Cousera course **Reproducable Research**.__
+
+Utilizing the storm dataset provided by The U.S National Oceanic and Atmospheric Administration (NOAA) we try to answer some basic questions about severe weather events specifically the following questions:
+
+1. Across the US, which types of events are the most harmful with respect to population health ?
+1. Across the US, which types of events have the greatest economic consequences ?
+
+The code used to publish these results are available on GitHub at this [repository](https://github.com/devender/research-project-2).
+
+## Data
 
 Data ->[https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2]
 
