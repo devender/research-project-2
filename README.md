@@ -1,6 +1,6 @@
 ## Synopsis
 
-__This research was done as part of Cousera course **Reproducable Research**.__
+_This research was done as part of Cousera course **Reproducable Research**._
 
 Utilizing the storm dataset provided by The U.S National Oceanic and Atmospheric Administration (NOAA) we try to answer some basic questions about severe weather events specifically the following questions:
 
