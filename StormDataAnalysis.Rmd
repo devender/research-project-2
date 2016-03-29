@@ -1,0 +1,25 @@
+---
+title: "Storm Data Analysis"
+author: "Devender R. Gollapally"
+output: 
+  html_document: 
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Synopsis
+
+Utilizing the storm dataset provided by The U.S National Oceanic and Atmospheric Administration (NOAA) we try to answer some basic questions about severe weather events specifically the following questions:
+
+1. Across the US, which types of events are the most harmful with respect to population health ?
+1. Across the US, which types of events have the greatest economic consequences ?
+
+The code used to publish these results are available on GitHub at this [repository](https://github.com/devender/research-project-2).
+
+## Data Processing
+
+## Results
+
