@@ -30,6 +30,7 @@ library(R.utils)
 ```
 
 ## Data Processing
+
 ```{r warning=FALSE,message=FALSE,results="hide",echo=FALSE}
 # Setup Working Directory
 if(!file.exists("data")) { 
@@ -53,19 +54,52 @@ if(!file.exists("data/StormData.csv")){
 
 The unzipped file StormData.csv has more than 30 columns but for this analysis we only require a few, so we read the required data into memory.
 
-```{r warning=FALSE,message=FALSE}
+```{r warning=FALSE,message=FALSE,results="hide"}
 storm_data <- fread("data/StormData.csv",sep=",",header=TRUE,select=c("EVTYPE",
-                                                                    "FATALITIES",
-                                                                    "INJURIES",
-                                                                    "PROPDMG",
-                                                                    "PROPDMGEXP",
-                                                                    "CROPDMG",
-                                                                    "CROPDMGEXP"))
-
+"FATALITIES","INJURIES","PROPDMG","PROPDMGEXP","CROPDMG","CROPDMGEXP"))
+```
+Lets factorize the event type and take a look at data.
+```{r}
+storm_data <- transform(storm_data,EVTYPE = factor(EVTYPE))
 str(storm_data)
 ```
 
+### Preparing the Property Damage and Crop Damage data.
 
+Property Damage Exponent
+```{r}
+unique(storm_data$PROPDMGEXP)
+```
+Crop Damage Exponent
+```{r}
+unique(storm_data$CROPDMGEXP)
+```
+#### Function to expand the exponent
+
+```{r warning=FALSE,message=FALSE,results="hide"}
+expand_expo<-function(char){
+    if(char == "M" | char == "m"){
+        return(1e+06)
+    }else if(char == "K" | char == "k"){
+        return(1e+03)
+    }else if(char=="B" | char == "b"){
+        return(1e+09)
+    }else if(char=="H" | char == "h"){
+        return(1e+02)
+    }else if(char=="" | char=="+" | char=="?" | char == "-"){
+        return(1)
+    }else{
+        return(as.numeric(char))
+    }
+}
+v_expand_expo<-Vectorize(expand_expo, SIMPLIFY = TRUE)
+```
+#### Transform the data set
+```{r warning=FALSE,message=FALSE,results="hide"}
+storm_data<-storm_data %>%
+    mutate(cropDamage = CROPDMG * v_expand_expo(CROPDMGEXP)) %>%
+    mutate(propDamage = PROPDMG * v_expand_expo(PROPDMGEXP))
+```
 
 ## Results
 

@@ -138,18 +138,12 @@ $(document).ready(function () {
 }</code></pre>
 <p>The unzipped file StormData.csv has more than 30 columns but for this analysis we only require a few, so we read the required data into memory.</p>
 <pre class="r"><code>storm_data &lt;- fread(&quot;data/StormData.csv&quot;,sep=&quot;,&quot;,header=TRUE,select=c(&quot;EVTYPE&quot;,
-                                                                    &quot;FATALITIES&quot;,
-                                                                    &quot;INJURIES&quot;,
-                                                                    &quot;PROPDMG&quot;,
-                                                                    &quot;PROPDMGEXP&quot;,
-                                                                    &quot;CROPDMG&quot;,
-                                                                    &quot;CROPDMGEXP&quot;))</code></pre>
-<pre><code>## 
-Read 89.9% of 967216 rows
-Read 902297 rows and 7 (of 37) columns from 0.523 GB file in 00:00:03</code></pre>
-<pre class="r"><code>str(storm_data)</code></pre>
+&quot;FATALITIES&quot;,&quot;INJURIES&quot;,&quot;PROPDMG&quot;,&quot;PROPDMGEXP&quot;,&quot;CROPDMG&quot;,&quot;CROPDMGEXP&quot;))</code></pre>
+<p>Lets factorize the event type and take a look at data.</p>
+<pre class="r"><code>storm_data &lt;- transform(storm_data,EVTYPE = factor(EVTYPE))
+str(storm_data)</code></pre>
 <pre><code>## Classes 'data.table' and 'data.frame':   902297 obs. of  7 variables:
-##  $ EVTYPE    : chr  &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; ...
+##  $ EVTYPE    : Factor w/ 985 levels &quot;   HIGH SURF ADVISORY&quot;,..: 834 834 834 834 834 834 834 834 834 834 ...
 ##  $ FATALITIES: num  0 0 0 0 0 0 0 0 1 0 ...
 ##  $ INJURIES  : num  15 0 2 2 2 6 1 0 14 0 ...
 ##  $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
@@ -157,6 +151,41 @@ Read 902297 rows and 7 (of 37) columns from 0.523 GB file in 00:00:03</code></pr
 ##  $ CROPDMG   : num  0 0 0 0 0 0 0 0 0 0 ...
 ##  $ CROPDMGEXP: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
 ##  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;</code></pre>
+<div id="preparing-the-property-damage-and-crop-damage-data." class="section level3">
+<h3>Preparing the Property Damage and Crop Damage data.</h3>
+<p>Property Damage Exponent</p>
+<pre class="r"><code>unique(storm_data$PROPDMGEXP)</code></pre>
+<pre><code>##  [1] &quot;K&quot; &quot;M&quot; &quot;&quot;  &quot;B&quot; &quot;m&quot; &quot;+&quot; &quot;0&quot; &quot;5&quot; &quot;6&quot; &quot;?&quot; &quot;4&quot; &quot;2&quot; &quot;3&quot; &quot;h&quot; &quot;7&quot; &quot;H&quot; &quot;-&quot;
+## [18] &quot;1&quot; &quot;8&quot;</code></pre>
+<p>Crop Damage Exponent</p>
+<pre class="r"><code>unique(storm_data$CROPDMGEXP)</code></pre>
+<pre><code>## [1] &quot;&quot;  &quot;M&quot; &quot;K&quot; &quot;m&quot; &quot;B&quot; &quot;?&quot; &quot;0&quot; &quot;k&quot; &quot;2&quot;</code></pre>
+<div id="function-to-expand-the-exponent" class="section level4">
+<h4>Function to expand the exponent</h4>
+<pre class="r"><code>expand_expo&lt;-function(char){
+    if(char == &quot;M&quot; | char == &quot;m&quot;){
+        return(1e+06)
+    }else if(char == &quot;K&quot; | char == &quot;k&quot;){
+        return(1e+03)
+    }else if(char==&quot;B&quot; | char == &quot;b&quot;){
+        return(1e+09)
+    }else if(char==&quot;H&quot; | char == &quot;h&quot;){
+        return(1e+02)
+    }else if(char==&quot;&quot; | char==&quot;+&quot; | char==&quot;?&quot; | char == &quot;-&quot;){
+        return(1)
+    }else{
+        return(as.numeric(char))
+    }
+}
+v_expand_expo&lt;-Vectorize(expand_expo, SIMPLIFY = TRUE)</code></pre>
+</div>
+<div id="transform-the-data-set" class="section level4">
+<h4>Transform the data set</h4>
+<pre class="r"><code>storm_data&lt;-storm_data %&gt;%
+    mutate(cropDamage = CROPDMG * v_expand_expo(CROPDMGEXP)) %&gt;%
+    mutate(propDamage = PROPDMG * v_expand_expo(PROPDMGEXP))</code></pre>
+</div>
+</div>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
