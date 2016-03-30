@@ -125,6 +125,38 @@ $(document).ready(function () {
 </div>
 <div id="data-processing" class="section level2">
 <h2>Data Processing</h2>
+<p>For this research we download the dataset from <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2">here</a>.</p>
+<pre class="r"><code>if(!file.exists(&quot;data/StormData.csv&quot;)){
+    
+    if(!file.exists(&quot;data/StormData.csv.bz2&quot;)){ 
+        flog.info(&quot;downloading dataset&quot;)
+        url&lt;-&quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;
+        download.file(url,&quot;data/StormData.csv.bz2&quot;,method=&quot;curl&quot;) 
+    }
+    
+    bunzip2(&quot;data/StormData.csv.bz2&quot;, destname=&quot;data/StormData.csv&quot;)
+}</code></pre>
+<p>The unzipped file StormData.csv has more than 30 columns but for this analysis we only require a few, so we read the required data into memory.</p>
+<pre class="r"><code>storm_data &lt;- fread(&quot;data/StormData.csv&quot;,sep=&quot;,&quot;,header=TRUE,select=c(&quot;EVTYPE&quot;,
+                                                                    &quot;FATALITIES&quot;,
+                                                                    &quot;INJURIES&quot;,
+                                                                    &quot;PROPDMG&quot;,
+                                                                    &quot;PROPDMGEXP&quot;,
+                                                                    &quot;CROPDMG&quot;,
+                                                                    &quot;CROPDMGEXP&quot;))</code></pre>
+<pre><code>## 
+Read 89.9% of 967216 rows
+Read 902297 rows and 7 (of 37) columns from 0.523 GB file in 00:00:03</code></pre>
+<pre class="r"><code>str(storm_data)</code></pre>
+<pre><code>## Classes 'data.table' and 'data.frame':   902297 obs. of  7 variables:
+##  $ EVTYPE    : chr  &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; &quot;TORNADO&quot; ...
+##  $ FATALITIES: num  0 0 0 0 0 0 0 0 1 0 ...
+##  $ INJURIES  : num  15 0 2 2 2 6 1 0 14 0 ...
+##  $ PROPDMG   : num  25 2.5 25 2.5 2.5 2.5 2.5 2.5 25 25 ...
+##  $ PROPDMGEXP: chr  &quot;K&quot; &quot;K&quot; &quot;K&quot; &quot;K&quot; ...
+##  $ CROPDMG   : num  0 0 0 0 0 0 0 0 0 0 ...
+##  $ CROPDMGEXP: chr  &quot;&quot; &quot;&quot; &quot;&quot; &quot;&quot; ...
+##  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;</code></pre>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
