@@ -12,12 +12,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Synopsis
 
-Utilizing the storm dataset provided by The U.S National Oceanic and Atmospheric Administration (NOAA) we try to answer some basic questions about severe weather events specifically the following questions:
+Utilizing the storm dataset provided by The U.S National Oceanic and Atmospheric Administration (NOAA) we try to answer _two_ basic questions about severe weather events namely:
 
 1. Across the US, which types of events are the most harmful with respect to population health ?
 1. Across the US, which types of events have the greatest economic consequences ?
 
-The code used to publish these results are available on GitHub at this [repository](https://github.com/devender/research-project-2).
+Our results shows that the most harmful event type for population health is Tornados and the eventy type with the greatest economic consequences is flodding.
+
+The code used to analyze the data and produce this report is available on GitHub at this [repository](https://github.com/devender/research-project-2).
 
 ```{r warning=FALSE,message=FALSE,results="hide",echo=FALSE}
 rm(list=ls())
@@ -25,8 +27,8 @@ gc()
 setwd("/Users/Devender/research-project-2")
 library(data.table)
 library(dplyr)
-library(lubridate)
 library(R.utils)
+library(lattice)
 ```
 
 ## Data Processing
@@ -52,7 +54,7 @@ if(!file.exists("data/StormData.csv")){
 }
 ```
 
-The unzipped file StormData.csv has more than 30 columns but for this analysis we only require a few, so we read the required data into memory.
+The unzipped file StormData.csv has more than 30 columns but for this analysis we require only a few that we read into memory.
 
 ```{r warning=FALSE,message=FALSE,results="hide"}
 storm_data <- fread("data/StormData.csv",sep=",",header=TRUE,select=c("EVTYPE",
@@ -65,6 +67,8 @@ str(storm_data)
 ```
 
 ### Preparing the Property Damage and Crop Damage data.
+
+Both the property damage and crop damage is represented as two fields the base and the exponent, we need to transform this into a single field so that we can do proper comparisons.
 
 Property Damage Exponent
 ```{r}
@@ -92,6 +96,7 @@ expand_expo<-function(char){
         return(as.numeric(char))
     }
 }
+#creating a vectorized function
 v_expand_expo<-Vectorize(expand_expo, SIMPLIFY = TRUE)
 ```
 #### Transform the data set
@@ -103,3 +108,61 @@ storm_data<-storm_data %>%
 
 ## Results
 
+### Across the United States, which types of events are most harmful with respect to population health?
+
+To find this we will group the observations by event type and get the sum of all injuries and fatalities. We further take the LOG10 so that it is easier to represent on a plot and limit it to the top 10 most harmful event types.
+
+```{r results="hide",message=FALSE}
+pop_health<- storm_data %>%
+    group_by(EVTYPE) %>%
+    summarize(Injuries = log(sum(INJURIES)), 
+              Fatalities = log(sum(FATALITIES)), 
+              total = log(sum(INJURIES)) + log(sum(FATALITIES))) %>%
+    arrange(desc(total)) %>%
+    top_n(10)
+```
+
+Let go ahead and plot the above data using lattice and see what we get:
+
+```{r}
+barchart(EVTYPE ~ Injuries + Fatalities, 
+         data = pop_health, 
+         stack = TRUE, 
+         auto.key = list(space="right"),
+         main = list(label="Top 10 causes of Injuries and Fatalities combined"),
+         xlab = c("LOG of total injuries and fatalities"))
+```
+
+The above plot makes it evident that:
+
+1. Tornados are the most harmful to the population.
+1. Closely followed by Excessive Heat and Thunder Storm Winds.
+
+### Across the United States, which types of events have the greatest economic consequences?
+
+To find this we will group the observations by event type and get the sum of all property and crop dameges. We further limit it to the top 10 most harmful event types.
+
+```{r results="hide",message=FALSE}
+economy<-storm_data %>%
+    group_by(EVTYPE) %>%
+    summarise(PropertyDamage = sum(propDamage),
+              CropDamage = sum(cropDamage),
+              total = sum(propDamage)+sum(cropDamage)) %>%
+    arrange(desc(total)) %>%
+    top_n(10)
+```
+Let go ahead and plot the above data using lattice and see what we get:
+
+```{r}
+barchart(EVTYPE ~ PropertyDamage + CropDamage, 
+         data = economy, 
+         stack = TRUE, 
+         auto.key = list(space="right"),
+         main = list(label="Top 10 causes of property and crop dameges combined"),
+         xlab = c("Total property and crop damages in billions."))
+```
+
+From the above chart it is evident that:
+
+1. The maximum damages to property and crops together is done by flodding.
+2. Followed closely by Hurricans and Tornados.

@@ -6,6 +6,7 @@ library(data.table)
 library(dplyr)
 library(lubridate)
 library(R.utils)
+library(lattice)
 
 if(!file.exists("data")) { 
     dir.create("data")
@@ -49,3 +50,21 @@ v_expand_expo<-Vectorize(expand_expo, SIMPLIFY = TRUE)
 storm_data<-storm_data %>%
     mutate(cropDamage = CROPDMG * v_expand_expo(CROPDMGEXP)) %>%
     mutate(propDamage = PROPDMG * v_expand_expo(PROPDMGEXP))
+
+pop_health<- storm_data %>%
+    group_by(EVTYPE) %>%
+    summarize(Injuries = log(sum(INJURIES)), 
+              Fatalities = log(sum(FATALITIES)), 
+              total = log(sum(INJURIES)) + log(sum(FATALITIES))) %>%
+    arrange(desc(total)) %>%
+    top_n(10)
+    
+economy<-storm_data %>%
+    group_by(EVTYPE) %>%
+    summarise(PropertyDamage = sum(propDamage),
+              CropDamage = sum(cropDamage),
+              total = sum(propDamage)+sum(cropDamage)) %>%
+    arrange(desc(total)) %>%
+    top_n(10)
+
+#barchart(EVTYPE ~ Injuries + Fatalities, data = pop_health, stack = TRUE, xlab = c("LOG of total injuries and fatalities"))
